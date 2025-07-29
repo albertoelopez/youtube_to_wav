@@ -1,0 +1,28 @@
+# Build artifacts
+dist/
+build/
+*.exe
+*.pkg
+
+# FFmpeg binaries (too large for git)
+YouTube-Simple-Flet/ffmpeg/
+YouTube-Simple-Flet/dist/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.log
+nul
