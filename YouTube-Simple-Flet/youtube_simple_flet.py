@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import flet as ft
-import subprocess
 import os
 import sys
 import configparser
+import yt_dlp
 
 def get_ffmpeg_path():
     """Get the path to bundled ffmpeg or system ffmpeg"""
@@ -112,26 +112,28 @@ def main(page: ft.Page):
             else:
                 output_template = os.path.join(output_dir, "%(title)s.%(ext)s")
             
-            # yt-dlp command with bundled ffmpeg
+            # yt-dlp options with bundled ffmpeg
             ffmpeg_path = get_ffmpeg_path()
-            result = subprocess.run([
-                "yt-dlp", 
-                "--extract-audio", 
-                "--audio-format", "wav",
-                "--no-playlist",
-                "--ffmpeg-location", ffmpeg_path,
-                "-o", output_template,
-                url
-            ], capture_output=True, text=True, timeout=120)
+            ydl_opts = {
+                'format': 'bestaudio/best',
+                'extractaudio': True,
+                'audioformat': 'wav',
+                'outtmpl': output_template,
+                'noplaylist': True,
+                'ffmpeg_location': ffmpeg_path,
+            }
             
-            if result.returncode == 0:
-                status_text.value = "Success! File saved to output directory"
-                status_text.color = "green"
-            else:
-                status_text.value = f"Failed: {result.stderr[:100] if result.stderr else 'Unknown error'}"
-                status_text.color = "red"
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([url])
+            
+            status_text.value = "Success! File saved to output directory"
+            status_text.color = "green"
+        except yt_dlp.DownloadError as e:
+            status_text.value = f"Download failed: {str(e)}"
+            status_text.color = "red"
         except Exception as e:
-            status_text.value = f"Error: {str(e)}"
+            import traceback
+            status_text.value = f"An unexpected error occurred:\n{traceback.format_exc()}"
             status_text.color = "red"
         
         page.update()
